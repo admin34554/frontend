@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elektra Waves Ticket Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        fieldset {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        legend {
+            font-weight: bold;
+            padding: 0 10px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .range-value {
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .checkbox-group {
+            margin: 10px 0;
+        }
+        .checkbox-group label {
+            display: inline;
+            margin-left: 5px;
+        }
+        .radio-group {
+            margin: 10px 0;
+        }
+        .radio-group label {
+            display: inline;
+            margin-left: 5px;
+        }
+        input[type="submit"],
+        input[type="reset"] {
+            padding: 10px 15px;
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        input[type="reset"] {
+            background-color: #f44336;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <form id="bookingForm" onsubmit="return costCalculation()">
+        <fieldset>
+            <legend>Personal Details</legend>
+            <a href="#costchart" id="costchart_ref">View ticket cost chart</a>
+            
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" pattern="[A-Za-z ]+" required placeholder="Enter your name">
+            
+            <div class="radio-group">
+                Gender:
+                <input type="radio" id="male" name="gender" value="male" required>
+                <label for="male">Male</label>
+                <input type="radio" id="female" name="gender" value="female" required>
+                <label for="female">Female</label>
+            </div>
+            
+            <label for="address">Address:</label>
+            <textarea id="address" name="address" rows="4" cols="50" required placeholder="Enter your address"></textarea>
+            
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="tel" id="phoneNumber" name="phoneNumber" pattern="[789][0-9]{9}" required placeholder="Enter your phone number">
+        </fieldset>
+        
+        <fieldset>
+            <legend>Ticket Details</legend>
+            <label for="noOfTickets">No Of Tickets: <span id="ticketValue" class="range-value">5</span></label>
+            <input type="range" id="noOfTickets" name="noOfTickets" min="5" max="40" step="1" value="5" oninput="show_value(this.value)" required>
+            
+            <label for="ticketType">Ticket Type:</label>
+            <select id="ticketType" name="ticketType" required>
+                <option value="Floor">Floor</option>
+                <option value="Balcony">Balcony</option>
+            </select>
+        </fieldset>
+        
+        <fieldset>
+            <legend>Add Ons</legend>
+            <div class="checkbox-group">
+                <input type="checkbox" id="refreshment" name="addOns" value="Refreshment">
+                <label for="refreshment">Refreshment</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="couponCode" name="addOns" value="CouponCode">
+                <label for="couponCode">Coupon Code</label>
+            </div>
+            
+            <label for="cc">Coupon Code:</label>
+            <input type="text" id="cc" name="cc" list="couponCodes" placeholder="Enter coupon code">
+            <datalist id="couponCodes">
+                <option value="ELEKTRA20">
+                <option value="SIMBA20">
+            </datalist>
+        </fieldset>
+        
+        <input type="submit" value="CONFIRM BOOKING">
+        <input type="reset" value="CLEAR">
+        
+        <div id="result"></div>
+    </form>
+    
+    <div id="costchart">
+        <h3>Ticket Cost Chart</h3>
+        <ul>
+            <li>Floor Ticket: Rs.400 each</li>
+            <li>Balcony Ticket: Rs.500 each</li>
+            <li>Discounts:
+                <ul>
+                    <li>10% discount for more than 20 tickets</li>
+                    <li>Additional 2% discount with valid coupon code</li>
+                </ul>
+            </li>
+            <li>Refreshment: Rs.100 per ticket</li>
+        </ul>
+    </div>
+    
+    <script>
+        function show_value(val) {
+            document.getElementById("ticketValue").innerHTML = val;
+        }
+        
+        function costCalculation() {
+            // Prevents double calculation issue
+            var total = 0;
+            var discount = 0;
+
+            // Fetching all input values
+            var ticketType = document.getElementById("ticketType").value;
+            var ticketCount = parseInt(document.getElementById("noOfTickets").value);
+            var refreshment = document.getElementById("refreshment").checked;
+            var couponChecked = document.getElementById("couponCode").checked;
+            var couponCode = document.getElementById("cc").value.trim();
+
+            // Step 1: Base cost based on ticket type
+            if (ticketType === "Floor") {
+                total = 400 * ticketCount;
+            } else if (ticketType === "Balcony") {
+                total = 500 * ticketCount;
+            }
+
+            // Step 2: Calculate discounts
+            if (ticketCount > 20) {
+                discount = 10; // 10% discount for >20 tickets
+                
+                // Additional 2% if coupon is checked and valid
+                if (couponChecked && (couponCode === "ELEKTRA20" || couponCode === "SIMBA20")) {
+                    discount += 2; // Total 12% discount
+                }
+                
+                // Apply discount
+                total = total * (1 - discount/100);
+            }
+
+            // Step 3: Add refreshment cost (fixed Rs.100, not per ticket)
+            if (refreshment) {
+                total += 100;
+            }
+
+            // Step 4: Display result (rounded value)
+            document.getElementById("result").innerHTML = "Your ticket charge is Rs." + Math.round(total);
+            
+            // Prevent form submission for demo purposes
+            return false;
+        }
+    </script>
+</body>
+</html>
