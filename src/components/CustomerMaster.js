@@ -47,6 +47,32 @@ const CustomerMaster = () => {
     }));
   };
 
+  const handleSave = async () => {
+    try {
+      const response = await fetch(
+        "https://aadhi-store.onrender.com/api/v1/customer-master",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save customer.");
+      }
+
+      const result = await response.json();
+      alert("Customer saved successfully!");
+      console.log(result);
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", backgroundColor: "#f5f7fa" }}>
       {/* Sidebar with increased width */}
